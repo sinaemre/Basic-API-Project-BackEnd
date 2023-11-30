@@ -1,4 +1,5 @@
 ﻿using ApplicationCore_API.DTO_s;
+using ApplicationCore_API.Entities.Concrete;
 using AutoMapper;
 using Infrastructure_API.Services.Interface;
 using Microsoft.AspNetCore.Cors;
@@ -43,6 +44,72 @@ namespace RestfulAPI_Project.Controllers
             }
 
             return Ok(model);
+        }
+
+        /// <summary>
+        /// Get Category By Id
+        /// </summary>
+        /// <param name="id">The Id of Category</param>
+        /// <returns></returns>
+        [HttpGet("{id?}", Name = "Get Category")]
+        [ProducesResponseType(200), ProducesResponseType(404)]
+        public IActionResult GetCategory(int id)
+        {
+            var category = _categoryRepo.GetCategory(id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                var model = _mapper.Map<GetCategoryDTO>(category);
+                return Ok(model);
+            }
+        }
+
+        /*
+         * Action Methodlar
+         * 
+         * 1) FromBody => HTTP Request'inin içierisinde gönderilen parametreleri okumak için kullanılır.
+         * 
+         * 2) FromQuery => URL içerisinde gömülen parametreleri okumak için kullanılır.
+         * 
+         * 3) FromRoute => Enpoint URL'i içerisinde gönderilen parametreleri okumak için kullanılır. Yaygın olarak resource'a ait id bilgisini okurken kullanılır. 
+         */
+
+        /// <summary>
+        /// Add The New Category
+        /// </summary>
+        /// <param name="model">In this process, Name and Description does required fields!</param>
+        /// <returns></returns>
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)] // Ekleme Başarılı
+        [ProducesResponseType(StatusCodes.Status400BadRequest)] // Validasyonlara uyulmadı
+        [ProducesResponseType(StatusCodes.Status404NotFound)] // Bulunamadı
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)] // Server hatası
+        public IActionResult CreateCategory([FromBody]CreateCategoryDTO model)
+        {
+            if (model == null)
+            {
+                return StatusCode(404, ModelState);
+            }
+
+            if (_categoryRepo.AnyCategory(model.Name))
+            {
+                ModelState.AddModelError("", "This category name is used! Choose another one!");
+                return BadRequest(ModelState);
+            }
+
+            var category = _mapper.Map<Category>(model);
+            var result = _categoryRepo.CreateCategory(category);
+
+            if (!result)
+            {
+                ModelState.AddModelError("", $"Something went wrong!\nCategory Name: {category.Name}\nDescription: {category.Description}");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok(category);
         }
     }
 }

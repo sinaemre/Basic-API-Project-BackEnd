@@ -14,6 +14,7 @@ namespace Infrastructure_API.AutoMapper
         public Mapping()
         {
             CreateMap<Category, GetCategoryDTO>().ReverseMap();
+            CreateMap<Category, CreateCategoryDTO>().ReverseMap();
         }
     }
 }
