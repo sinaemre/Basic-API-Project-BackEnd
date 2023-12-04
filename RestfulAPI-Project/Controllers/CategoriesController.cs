@@ -87,7 +87,7 @@ namespace RestfulAPI_Project.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)] // Validasyonlara uyulmadı
         [ProducesResponseType(StatusCodes.Status404NotFound)] // Bulunamadı
         [ProducesResponseType(StatusCodes.Status500InternalServerError)] // Server hatası
-        public IActionResult CreateCategory([FromBody]CreateCategoryDTO model)
+        public IActionResult CreateCategory([FromForm]CreateCategoryDTO model)
         {
             if (model == null)
             {
@@ -106,6 +106,31 @@ namespace RestfulAPI_Project.Controllers
             if (!result)
             {
                 ModelState.AddModelError("", $"Something went wrong!\nCategory Name: {category.Name}\nDescription: {category.Description}");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok(category);
+        }
+
+
+        /// <summary>
+        /// Update Category
+        /// </summary>
+        /// <param name="model">In this process Id, Name and Description does required fields.</param>
+        /// <returns></returns>
+        [HttpPut]
+        public IActionResult UpdateCategory([FromForm] UpdateCategoryDTO model)
+        {
+            if (model == null) 
+            {
+                return BadRequest(ModelState);
+            }
+
+            var category = _mapper.Map<Category>(model);
+            var result = _categoryRepo.UpdateCategory(category);
+            if (!result)
+            {
+                ModelState.AddModelError("", "Something went wrong...");
                 return StatusCode(500, ModelState);
             }
 
