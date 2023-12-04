@@ -136,5 +136,21 @@ namespace RestfulAPI_Project.Controllers
 
             return Ok(category);
         }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCategory(int id)
+        {
+            var category = _categoryRepo.GetCategory(id);
+            if (category == null)
+            {
+                return NotFound(ModelState);
+            }
+            var result = _categoryRepo.DeleteCategory(id);
+            if (!result)
+            {
+                ModelState.AddModelError("", "Something went wrong!");
+            }
+            return Ok("Kategori silindi!");
+        }
     }
 }
